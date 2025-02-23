@@ -2,7 +2,7 @@
 1. Клонируйте репозиторий:
 git clone https://github.com/krosssifer/angular-chat.git
 2. Перейдите в директорию проекта:
-cd angular-chat (path)
+cd .(path)/angular-chat
 3. Установите зависимости:
 npm install
 4. Запустите приложение:
