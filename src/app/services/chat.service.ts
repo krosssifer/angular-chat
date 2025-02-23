@@ -63,11 +63,11 @@ export class ChatService {
       timestamp: Date.now()
     };
 
-    // Add to local messages first
+    
     this.messages.push(message);
     this.saveMessages();
 
-    // Only emit if we're not processing a broadcast
+    
     if (!this.isProcessingBroadcast) {
       this.messageSubject.next(message);
       this.broadcastChannel.postMessage({ type: 'NEW_MESSAGE', message });
