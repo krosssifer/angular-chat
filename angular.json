@@ -23,6 +23,12 @@
               "optimization": true,
               "outputHashing": "all",
               "sourceMap": false
+            },
+            "secondary": {
+              "extractLicenses": false,
+              "namedChunks": true,
+              "optimization": false,
+              "sourceMap": true
             }
           },
           "options": {
@@ -44,6 +50,10 @@
             },
             "production": {
               "buildTarget": "demo:build:production"
+            },
+            "secondary": {
+              "buildTarget": "demo:build:secondary",
+              "port": 4201
             }
           },
           "defaultConfiguration": "development"

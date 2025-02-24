@@ -4,7 +4,10 @@
   "scripts": {
     "ng": "ng",
     "start": "npx ng serve",
-    "build": "ng build"
+    "start:secondary": "npx ng serve --configuration=secondary",
+    "build": "ng build",
+    "server": "node server.js",
+    "dev": "concurrently \"npm run server\" \"npm run start\" \"npm run start:secondary\""
   },
   "dependencies": {
     "@angular/animations": "^19.0.6",
@@ -16,11 +19,15 @@
     "@angular/router": "^19.0.6",
     "@angular/material": "^19.0.0",
     "rxjs": "^7.8.1",
+    "socket.io": "^4.7.2",
+    "socket.io-client": "^4.7.2",
     "tslib": "^2.5.0",
     "zone.js": "~0.15.0",
-    "date-fns": "^3.0.0"
+    "date-fns": "^3.0.0",
+    "concurrently": "^8.2.2"
   },
   "devDependencies": {
+    "@types/socket.io-client": "^3.0.0",
     "@angular/build": "^19.0.7",
     "@angular/cli": "^19.0.7",
     "@angular/compiler-cli": "^19.0.6",

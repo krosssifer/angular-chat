@@ -1,6 +1,9 @@
-import { Component, OnInit, ViewChild, ElementRef, AfterViewChecked } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, AfterViewChecked, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatInputModule } from '@angular/material/input';
+import { MatIconModule } from '@angular/material/icon';
 import { ChatService } from '../../services/chat.service';
 import { UserService } from '../../services/user.service';
 import { Message } from '../../models/message.model';
@@ -9,53 +12,73 @@ import { format } from 'date-fns';
 @Component({
   selector: 'app-chat',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    MatButtonModule,
+    MatInputModule,
+    MatIconModule
+  ],
   template: `
-    <div class="h-screen flex flex-col">
-      <div class="bg-white shadow">
-        <div class="max-w-7xl mx-auto px-4 py-6 flex justify-between items-center">
-          <div>
-            <h1 class="text-2xl font-bold text-gray-900">Чат-приложение</h1>
-            <p class="text-gray-600">Вошёл как: {{ username }}</p>
-          </div>
+    <div class="h-screen flex flex-col bg-gray-100">
+      <!-- Header -->
+      <div class="bg-white shadow-md px-6 py-4 flex justify-between items-center">
+        <h1 class="text-xl font-semibold text-gray-800">Чат комната</h1>
+        <div class="flex items-center gap-4">
+          <span class="text-gray-600">{{ username }}</span>
           <button
             (click)="logout()"
-            class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+            class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors flex items-center gap-2"
           >
-            Сменить пользователя
+            
+            Сменить имя
           </button>
         </div>
       </div>
 
-      <div class="flex-1 overflow-y-auto p-4 space-y-4" #messageContainer>
+      <!-- Messages -->
+      <div class="flex-1 overflow-y-auto p-6 space-y-4" #messageContainer>
         @for (message of messages; track message.id) {
           <div 
-            class="p-4 rounded-lg" 
-            [class]="message.author === username ? 'bg-blue-100 ml-auto max-w-[80%]' : 'bg-gray-100 max-w-[80%]'"
+            class="flex"
+            [class]="message.author === username ? 'justify-end' : 'justify-start'"
           >
-            <div class="flex justify-between items-baseline">
-              <span class="font-bold">{{ message.author }}</span>
-              <span class="text-xs text-gray-500">{{ formatTime(message.timestamp) }}</span>
+            <div class="flex flex-col max-w-[70%]">
+              <div class="flex items-center gap-2 mb-1"
+                [class]="message.author === username ? 'flex-row-reverse' : ''">
+                <span class="text-sm text-gray-600">{{ message.author }}</span>
+                <span class="text-xs text-gray-400">{{ formatTime(message.timestamp) }}</span>
+              </div>
+              <div
+                class="rounded-2xl px-4 py-2 shadow-sm"
+                [class]="message.author === username ? 
+                  'bg-blue-500 text-white rounded-br-none' : 
+                  'bg-white text-gray-800 rounded-bl-none'"
+              >
+                <p class="break-words text-xl">{{ message.text }}</p>
+              </div>
             </div>
-            <p class="mt-1">{{ message.text }}</p>
           </div>
         }
       </div>
 
-      <div class="border-t p-4 bg-white">
-        <form (ngSubmit)="sendMessage()" class="flex gap-2">
-          <input
-            type="text"
-            [(ngModel)]="newMessage"
-            name="message"
-            class="flex-1 p-2 border rounded"
-            placeholder="Напишите сообщение..."
-            (keyup.enter)="sendMessage()"
-          />
+      <!-- Input Area -->
+      <div class="bg-white border-t px-6 py-4">
+        <form (ngSubmit)="sendMessage()" class="flex gap-3">
+          <div class="flex-1 relative">
+            <input
+              type="text"
+              [(ngModel)]="newMessage"
+              name="message"
+              class="w-full px-4 py-2 rounded-full border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+              placeholder="Напишите сообщение"
+              (keyup.enter)="sendMessage()"
+            >
+          </div>
           <button
             type="submit"
-            class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
             [disabled]="!newMessage.trim()"
+            class="px-6 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center gap-2"
           >
             Отправить
           </button>
@@ -64,7 +87,7 @@ import { format } from 'date-fns';
     </div>
   `
 })
-export class ChatComponent implements OnInit, AfterViewChecked {
+export class ChatComponent implements OnInit, AfterViewChecked, OnDestroy {
   messages: Message[] = [];
   newMessage = '';
   username: string;
@@ -86,7 +109,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     this.messages = this.chatService.getMessages();
     this.chatService.getMessageStream().subscribe(message => {
       if (!this.messages.some(m => m.id === message.id)) {
-        this.messages = [...this.messages, message];
+        this.messages = [...this.messages, message].sort((a, b) => a.timestamp - b.timestamp);
         this.scrollToBottom();
       }
     });
@@ -94,6 +117,10 @@ export class ChatComponent implements OnInit, AfterViewChecked {
 
   ngAfterViewChecked() {
     this.scrollToBottom();
+  }
+
+  ngOnDestroy() {
+    this.chatService.destroy();
   }
 
   sendMessage() {
